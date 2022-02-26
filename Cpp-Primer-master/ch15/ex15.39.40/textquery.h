@@ -13,25 +13,23 @@
 //  http://stackoverflow.com/questions/20823225/what-will-happen-if-a-user-defined-constructor-omits-ininitialization-for-data-m
 //
 
-
 #ifndef TEXTQUERY_H
 #define TEXTQUERY_H
 
-#include "StrBlob.h"
+#include <fstream>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
-#include <memory>
-#include <fstream>
+#include "StrBlob.h"
 
 class QueryResult;
 
 /**
  * @brief The TextQuery class using StrBlob
  */
-class TextQuery
-{
-public:
+class TextQuery {
+   public:
     typedef StrBlob::size_type line_no;
 
     // constructor
@@ -40,52 +38,43 @@ public:
     // query operation
     QueryResult query(const std::string&) const;
 
-private:
+   private:
     // data members
     StrBlob file;
 
-    std::map<std::string,
-             std::shared_ptr<std::set<line_no>>> wordMap;
-
+    std::map<std::string, std::shared_ptr<std::set<line_no>>> wordMap;
 };
 
 /**
  * @brief Query Result
  */
-class QueryResult
-{
+class QueryResult {
     friend std::ostream& operator<<(std::ostream&, const QueryResult&);
 
-public:
+   public:
     // constructor
     QueryResult(std::string s,
                 std::shared_ptr<std::set<TextQuery::line_no>> sp_l,
-                StrBlob f) :
-        sought(s), sp_lines(sp_l), file(f) { }
+                StrBlob f)
+        : sought(s), sp_lines(sp_l), file(f) {}
 
     // added for ex12.33
     // ? Think about wether the "const"s here are expected.
-    const StrBlob& get_file() const{ return file; }
+    const StrBlob& get_file() const { return file; }
 
-    std::set<TextQuery::line_no>::iterator
-    begin() { return sp_lines->begin(); }
+    std::set<TextQuery::line_no>::iterator begin() { return sp_lines->begin(); }
 
-    std::set<TextQuery::line_no>::iterator
-    end()   { return sp_lines->end();   }
+    std::set<TextQuery::line_no>::iterator end() { return sp_lines->end(); }
 
-
-
-private:
+   private:
     // three data members
     std::string sought;
     std::shared_ptr<std::set<TextQuery::line_no>> sp_lines;
     StrBlob file;
-
 };
 
 /**
  * @brief print the result to the output stream specified.
  */
-std::ostream&
-print(std::ostream&, const QueryResult &);
-#endif // TEXTQUERY_H
+std::ostream& print(std::ostream&, const QueryResult&);
+#endif  // TEXTQUERY_H

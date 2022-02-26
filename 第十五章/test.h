@@ -4,84 +4,24 @@
 
 using namespace std;
 
-// class Test;
-
-// void print(Test& test) {
-//     cout << test.item1 << endl;
-//     // cout << test.item2 << endl;
-//     // cout << test.item3 << endl;
-//     cout << "test" << endl;
-// }
-
-class Test {
+class TestFa {
    public:
-    friend void print(Test& test) {
-        cout << test.item1 << endl;
-        cout << test.item2 << endl;
-        cout << test.item3 << endl;
-        cout << "test" << endl;
+    TestFa() = default;
+    // TestFa() { cout << "这是默认构造函数" << endl; }
+    TestFa(const int& a, const int& b) : a(a), b(b) {
+        cout << "这是自定义的构建函数" << endl;
     }
-    int item1 = 1;
+    void print() { cout << a << " " << b << endl; }
 
    private:
-    int item2 = 2;
-
-   protected:
-    int item3 = 3;
+    int a;
+    int b;
 };
 
-class Test_pub : public Test {
+class TestSon : public TestFa {
    public:
-    using Test::item3;
-
-   private:
-    int item4 = 4;
+    TestSon() { cout << "这是son的默认构造函数" << endl; }
+    TestSon(const int& a, const int& b) : TestFa(a, b) {}
 };
-class Test_pri : private Test {
-   private:
-    int item5 = 5;
-};
-class Test_pro : protected Test {
-   private:
-    int item6 = 6;
-};
-
-class Base {
-   public:
-    virtual int fcn() {
-        cout << "这是Base::fcn()" << endl;
-        return 0;
-    }
-};
-
-class D1 : public Base {
-   public:
-    int fcn(int);
-    virtual void f2();
-};
-
-int D1::fcn(int n) {
-    cout << "这是D1新设立的fcn()" << endl;
-    return 0;
-}
-
-void D1::f2() {
-    cout << "这是D1::f2()" << endl;
-}
-
-class D2 : public D1 {
-   public:
-    int fcn(int);
-    int fcn();
-    void f2();
-};
-int D2::fcn() {
-    cout << "这是D2::fcn()" << endl;
-    return 0;
-}
-
-void D2::f2() {
-    cout << "这是D2::f2()" << endl;
-}
 
 #endif

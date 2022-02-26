@@ -2,22 +2,22 @@
 #define QUERY_H
 
 #include <iostream>
-#include <string>
 #include <memory>
+#include <string>
 #include "textquery.h"
 
 /**
  * @brief abstract class acts as a base class for all concrete query types
  *        all members are private.
  */
-class Query_base
-{
+class Query_base {
     friend class Query;
-protected:
-    using line_no = TextQuery::line_no; //  used in the eval function
+
+   protected:
+    using line_no = TextQuery::line_no;  //  used in the eval function
     virtual ~Query_base() = default;
 
-private:
+   private:
     // returns QueryResult that matches this query
     virtual QueryResult eval(const TextQuery&) const = 0;
 
@@ -31,26 +31,21 @@ private:
  *No public members defined in this class. All operation are through the friend
  *class Query.
  */
-class WordQuery : public Query_base
-{
+class WordQuery : public Query_base {
     // class Query uses the WordQuery constructor
     friend class Query;
-    WordQuery(const std::string& s):
-        query_word(s)
-    {
+    WordQuery(const std::string& s) : query_word(s) {
         std::cout << "WordQuery::WordQuery(" + s + ")\n";
     }
 
-
     // virtuals:
-    QueryResult eval(const TextQuery& t) const override
-    {   return t.query(query_word); }
-    std::string rep() const override
-    {
+    QueryResult eval(const TextQuery& t) const override {
+        return t.query(query_word);
+    }
+    std::string rep() const override {
         std::cout << "WodQuery::rep()\n";
         return query_word;
     }
-
 
     std::string query_word;
 };
@@ -58,66 +53,54 @@ class WordQuery : public Query_base
 /**
  * @brief interface class to manage the Query_base inheritance hierachy
  */
-class Query
-{
+class Query {
     friend Query operator~(const Query&);
     friend Query operator|(const Query&, const Query&);
     friend Query operator&(const Query&, const Query&);
 
-public:
+   public:
     // build a new WordQuery
-    Query(const std::string& s) : q(new WordQuery(s))
-    {
-        std::cout << "Query::Query(const std::string& s) where s="+s+"\n";
+    Query(const std::string& s) : q(new WordQuery(s)) {
+        std::cout << "Query::Query(const std::string& s) where s=" + s + "\n";
     }
 
     // interface functions: call the corresponding Query_base operatopns
-    QueryResult eval(const TextQuery& t) const
-    { return q->eval(t); }
-    std::string rep() const
-    {
+    QueryResult eval(const TextQuery& t) const { return q->eval(t); }
+    std::string rep() const {
         std::cout << "Query::rep() \n";
         return q->rep();
     }
 
-private:
+   private:
     // constructor only for friends
-    Query(std::shared_ptr<Query_base> query) :
-        q(query)
-    {
+    Query(std::shared_ptr<Query_base> query) : q(query) {
         std::cout << "Query::Query(std::shared_ptr<Query_base> query)\n";
     }
     std::shared_ptr<Query_base> q;
 };
 
-inline std::ostream&
-operator << (std::ostream& os, const Query& query)
-{
+inline std::ostream& operator<<(std::ostream& os, const Query& query) {
     // make a virtual call through its Query_base pointer to rep();
     return os << query.rep();
 }
 
 /**
  * @brief The BinaryQuery class
- *An abstract class holds data needed by the query types that operate on two operands
+ *An abstract class holds data needed by the query types that operate on two
+ *operands
  */
-class BinaryQuery : public Query_base
-{
-protected:
-    BinaryQuery(const Query&l, const Query& r, std::string s):
-        lhs(l), rhs(r), opSym(s)
-    {
+class BinaryQuery : public Query_base {
+   protected:
+    BinaryQuery(const Query& l, const Query& r, std::string s)
+        : lhs(l), rhs(r), opSym(s) {
         std::cout << "BinaryQuery::BinaryQuery()  where s=" + s + "\n";
     }
 
     // @note:  abstract class: BinaryQuery doesn't define eval
 
-    std::string rep() const override
-    {
+    std::string rep() const override {
         std::cout << "BinaryQuery::rep()\n";
-        return "(" + lhs.rep() + " "
-                   + opSym + " "
-                + rhs.rep() + ")";
+        return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")";
     }
 
     Query lhs, rhs;
@@ -129,20 +112,17 @@ protected:
  *
  *The & operator generates a OrQuery, which held by a Query,
  */
-class OrQuery :public BinaryQuery
-{
+class OrQuery : public BinaryQuery {
     friend Query operator|(const Query&, const Query&);
-    OrQuery(const Query& left, const Query& right):
-        BinaryQuery(left, right, "|")
-    {
+    OrQuery(const Query& left, const Query& right)
+        : BinaryQuery(left, right, "|") {
         std::cout << "OrQuery::OrQuery\n";
     }
 
-    QueryResult eval(const TextQuery& )const override;
+    QueryResult eval(const TextQuery&) const override;
 };
 
-inline Query operator|(const Query &lhs, const Query& rhs)
-{
+inline Query operator|(const Query& lhs, const Query& rhs) {
     return std::shared_ptr<Query_base>(new OrQuery(lhs, rhs));
 }
 
@@ -151,22 +131,19 @@ inline Query operator|(const Query &lhs, const Query& rhs)
  *
  *The & operator generates a AndQuery, which held by a Query,
  */
-class AndQuery : public BinaryQuery
-{
+class AndQuery : public BinaryQuery {
     friend Query operator&(const Query&, const Query&);
-    AndQuery(const Query& left, const Query& right):
-        BinaryQuery(left, right, "&")
-    {
+    AndQuery(const Query& left, const Query& right)
+        : BinaryQuery(left, right, "&") {
         std::cout << "AndQuery::AndQuery()\n";
     }
 
     // @note: inherits rep and define eval
 
-    QueryResult eval(const TextQuery &) const override;
+    QueryResult eval(const TextQuery&) const override;
 };
 
-inline Query operator& (const Query& lhs, const Query& rhs)
-{
+inline Query operator&(const Query& lhs, const Query& rhs) {
     return std::shared_ptr<Query_base>(new AndQuery(lhs, rhs));
 }
 
@@ -176,32 +153,28 @@ inline Query operator& (const Query& lhs, const Query& rhs)
  *The ~ operator generates a NotQuery, which held by a Query,
  *which it negates.
  */
-class NotQuery : public Query_base
-{
+class NotQuery : public Query_base {
     friend Query operator~(const Query& operand);
-    NotQuery(const Query& q): query(q)
-    {
+    NotQuery(const Query& q) : query(q) {
         std::cout << "NotQuery::NotQuery()\n";
     }
 
     // virtuals:
-    std::string rep() const override
-    {
+    std::string rep() const override {
         std::cout << "NotQuery::rep()\n";
         return "~(" + query.rep() + ")";
     }
 
-    QueryResult eval(const TextQuery &) const override;
+    QueryResult eval(const TextQuery&) const override;
 
     Query query;
 };
 
-inline Query operator~(const Query& operand)
-{
+inline Query operator~(const Query& operand) {
     return std::shared_ptr<Query_base>(new NotQuery(operand));
     //    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     // note : There is an imlplicit conversion here.
     //        The Query constructor that takes shared_ptr is not
     //        "explicit", thus the compiler allows this conversion.
 }
-#endif // QUERY_H
+#endif  // QUERY_H
